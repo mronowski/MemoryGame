@@ -18,28 +18,37 @@ namespace MemoryGame
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
+    using System.Windows.Threading;
     public partial class MainWindow : Window
     {
+        DispatcherTimer timer = new DispatcherTimer();
+        int tenthsOfSecondsElapsed;
+        int matchesFound;
+
+
         public MainWindow()
         {
             InitializeComponent();
+            timer.Interval = TimeSpan.FromSeconds(.1);
+            timer.Tick += Timer_Tick;
             SetUpGame();
+        }
+
+        private void Timer_Tick(object? sender, EventArgs e)
+        {
+            tenthsOfSecondsElapsed++;
+            timeTextBlock.Text = (tenthsOfSecondsElapsed / 10F).ToString("0.0s");
+            if (matchesFound == 8)
+            {
+                timer.Stop();
+                timeTextBlock.Text = timeTextBlock.Text + " - Jeszcze raz?";
+            }
         }
 
         private void SetUpGame()
         {
-            List<string> translations = new List<string>
-            {
-                "kot", "cat",
-                "oko","eye",
-                "nos","nose",
-                "pies","dog",
-                "ptak","bird",
-                "noga","leg",
-                "ryba","fish",
-                "ręka","arm"
-
-            };
+            
             List<Word> words = new List<Word>
             {
                 new Word("kot", 1),
@@ -64,13 +73,22 @@ namespace MemoryGame
 
             foreach (TextBlock textBlock in mainGrid.Children.OfType<TextBlock>())
             {
-                int index = random.Next(words.Count);
-                string nextTrans = words[index].TheWord;
-                int nextID = words[index].Id;
-                textBlock.Text = nextTrans;
-                textBlock.LineHeight = nextID;
-                words.RemoveAt(index);
+                if (textBlock.Name != "timeTextBlock")
+                {
+                    textBlock.Visibility = Visibility.Visible;
+                    textBlock.Background = Brushes.Black;
+                    int index = random.Next(words.Count);
+                    string nextTrans = words[index].TheWord;
+                    int nextID = words[index].Id;
+                    textBlock.Text = nextTrans;
+                    textBlock.LineHeight = nextID;
+                    words.RemoveAt(index);
+                }
             }
+
+            timer.Start();
+            tenthsOfSecondsElapsed = 0;
+            matchesFound = 0;
         }
 
         TextBlock lastTextBlockClicked;
@@ -86,6 +104,7 @@ namespace MemoryGame
             }
             else if (textBlock.LineHeight == lastTextBlockClicked.LineHeight && textBlock != lastTextBlockClicked)
             {
+                matchesFound++;
                 textBlock.Visibility = Visibility.Hidden;
                 lastTextBlockClicked.Visibility = Visibility.Hidden;
                 findingMatch = false;
@@ -95,6 +114,14 @@ namespace MemoryGame
                 lastTextBlockClicked.Background = Brushes.Black;
                 textBlock.Background = Brushes.Black;
                 findingMatch = false;
+            }
+        }
+
+        private void timeTextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if(matchesFound == 8)
+            {
+                SetUpGame();
             }
         }
     }
