@@ -15,10 +15,7 @@ using System.Windows.Shapes;
 
 namespace MemoryGame
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    /// 
+    
     using System.Windows.Threading;
     public partial class MainWindow : Window
     {
@@ -32,7 +29,7 @@ namespace MemoryGame
             InitializeComponent();
             timer.Interval = TimeSpan.FromSeconds(.1);
             timer.Tick += Timer_Tick;
-            SetUpGame();
+            
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
@@ -42,7 +39,7 @@ namespace MemoryGame
             if (matchesFound == 8)
             {
                 timer.Stop();
-                timeTextBlock.Text = timeTextBlock.Text + " - Jeszcze raz?";
+                timeTextBlock.Text = timeTextBlock.Text + " - lovely!";
             }
         }
 
@@ -76,6 +73,7 @@ namespace MemoryGame
                 if (textBlock.Name != "timeTextBlock")
                 {
                     textBlock.Visibility = Visibility.Visible;
+                    textBlock.IsEnabled = true;
                     textBlock.Background = Brushes.Black;
                     int index = random.Next(words.Count);
                     string nextTrans = words[index].TheWord;
@@ -93,6 +91,7 @@ namespace MemoryGame
 
         TextBlock lastTextBlockClicked;
         bool findingMatch = false;
+        Random random = new Random();
         private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
         {
             TextBlock textBlock = sender as TextBlock;
@@ -104,10 +103,21 @@ namespace MemoryGame
             }
             else if (textBlock.LineHeight == lastTextBlockClicked.LineHeight && textBlock != lastTextBlockClicked)
             {
+                Color randomColor = Color.FromRgb((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256));
+                SolidColorBrush brush = new SolidColorBrush(randomColor);
+                textBlock.Background = brush;
+                textBlock.IsEnabled = false;
+                lastTextBlockClicked.IsEnabled = false;
                 matchesFound++;
+                lastTextBlockClicked.Background = brush;
+                findingMatch = false;
+
+
+
+                /*matchesFound++;
                 textBlock.Visibility = Visibility.Hidden;
                 lastTextBlockClicked.Visibility = Visibility.Hidden;
-                findingMatch = false;
+                findingMatch = false;*/
             }
             else
             {
@@ -123,6 +133,12 @@ namespace MemoryGame
             {
                 SetUpGame();
             }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            SetUpGame();
+            btnStart.Content = "Restart";
         }
     }
 }
